@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  appnotification:
+    build:
+      context: .
+    command: bash start-dev.sh
+    ports:
+      - "8084:8080"
+      - "5009:5005"
+    environment:
+      GRADLE_USER_HOME: /box
+      #SPRING_PROFILES_ACTIVE: dev
+    volumes:
+      - .:/notification
+      - boxnotification:/box
+    depends_on:
+      - dbnotification
+    networks:
+      - ead-microservices-net
+  dbnotification:
+    image: postgres:14.5
+    environment:
+      POSTGRES_USER: notification
+      POSTGRES_PASSWORD: notification
+      POSTGRES_DB: ead-notification
+    ports:
+      - "5432:5432"
+    networks:
+      - ead-microservices-net
+  boxnotification:
+    image: busybox
+    volumes:
+      - /box
+    networks:
+      - ead-microservices-net
+networks:
+  ead-microservices-net:
+    name: ead-microservices-net
+    external: true
+volumes:
+  dbnotification:
+  boxnotification:
