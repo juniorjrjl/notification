@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: notification
       POSTGRES_DB: ead-notification
     ports:
-      - "5432:5432"
+      - "5434:5432"
     networks:
       - ead-microservices-net
   boxnotification:
