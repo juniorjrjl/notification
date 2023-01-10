@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -55,6 +56,11 @@ public class NotificationEntity implements Serializable {
     @Column(nullable = false)
     @Enumerated(STRING)
     private NotificationStatus notificationStatus;
+
+    @PrePersist
+    public void beforeSave(){
+        this.creationDate = OffsetDateTime.now();
+    }
 
     @Override
     public boolean equals(final Object o) {

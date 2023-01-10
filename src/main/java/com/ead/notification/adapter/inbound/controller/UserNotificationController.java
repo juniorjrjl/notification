@@ -5,9 +5,12 @@ import com.ead.notification.adapter.config.security.UserDetailsImpl;
 import com.ead.notification.adapter.dto.NotificationDTO;
 import com.ead.notification.core.domain.NotificationDomain;
 import com.ead.notification.core.domain.PageInfo;
+import com.ead.notification.core.exception.DomainNotFoundException;
+import com.ead.notification.core.port.NotificationQueryServicePort;
 import com.ead.notification.core.port.NotificationServicePort;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.procedure.spi.ParameterRegistrationImplementor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,31 +41,25 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserNotificationController {
 
     private final NotificationServicePort notificationServicePort;
+    private final NotificationQueryServicePort notificationQueryServicePort;
 
     @PreAuthorize("hasAnyRole('STUDENT')")
     @GetMapping
-    public ResponseEntity<Page<NotificationDomain>> getAllByUserId(@PathVariable final UUID userId,
+    public Page<NotificationDomain> getAllByUserId(@PathVariable final UUID userId,
                                                                    @PageableDefault(sort = "id", direction = ASC)final Pageable pageable,
                                                                    final Authentication authentication){
         log.info("[getAllByUserID] notifications requested by {}", ((UserDetailsImpl)authentication.getPrincipal()).id());
         var pageInfo = new PageInfo(pageable.getPageNumber(), pageable.getPageSize());
-        var response = notificationServicePort.findAllByUserId(userId, pageInfo);
-        return ResponseEntity.status(OK).body(new PageImpl<>(response, pageable, response.size()));
+        var response = notificationQueryServicePort.findAllByUserId(userId, pageInfo);
+        return new PageImpl<>(response, pageable, response.size());
     }
 
     @PreAuthorize("hasAnyRole('STUDENT')")
     @PutMapping("{notificationId}")
-    public ResponseEntity<Object> update(@PathVariable final UUID userId,
+    public NotificationDomain update(@PathVariable final UUID userId,
                                          @PathVariable final UUID notificationId,
                                          @RequestBody @Valid final NotificationDTO request){
-        var modelOptional = notificationServicePort.findByIdAndUserId(notificationId, userId);
-        if (modelOptional.isEmpty()){
-            return ResponseEntity.status(NOT_FOUND).body("Notification not found!");
-        }
-        var model = modelOptional.get();
-        model = model.toBuilder().notificationStatus(request.notificationStatus()).build();
-        notificationServicePort.save(model);
-        return ResponseEntity.status(OK).body(model);
+        return notificationServicePort.update(notificationId, userId, request.notificationStatus());
     }
 
 }

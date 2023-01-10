@@ -21,15 +21,10 @@ public interface NotificationMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "notificationStatus", expression = "java(createdStatus())")
-    @Mapping(target = "creationDate", expression = "java(currentDateTime())")
     NotificationDomain toDomain(final NotificationCommandDTO dto);
 
     default NotificationStatus createdStatus(){
         return CREATED;
-    }
-
-    default OffsetDateTime currentDateTime(){
-        return OffsetDateTime.now();
     }
 
 }

@@ -2,7 +2,9 @@ package com.ead.notification.core.service;
 
 import com.ead.notification.core.domain.NotificationDomain;
 import com.ead.notification.core.domain.PageInfo;
+import com.ead.notification.core.domain.enumeration.NotificationStatus;
 import com.ead.notification.core.port.NotificationPersistencePort;
+import com.ead.notification.core.port.NotificationQueryServicePort;
 import com.ead.notification.core.port.NotificationServicePort;
 import lombok.AllArgsConstructor;
 
@@ -17,6 +19,7 @@ import static com.ead.notification.core.domain.enumeration.NotificationStatus.CR
 public class NotificationServicePortImpl implements NotificationServicePort {
 
     private final NotificationPersistencePort notificationPersistencePort;
+    private final NotificationQueryServicePort notificationQueryServicePort;
 
     @Override
     public NotificationDomain save(final NotificationDomain domain) {
@@ -24,12 +27,9 @@ public class NotificationServicePortImpl implements NotificationServicePort {
     }
 
     @Override
-    public List<NotificationDomain> findAllByUserId(final UUID userId, final PageInfo pageInfo) {
-        return notificationPersistencePort.findAllByUserIdAndNotificationStatus(userId, CREATED, pageInfo);
+    public NotificationDomain update(final UUID id, final UUID userId, final NotificationStatus status) {
+        var domain = notificationQueryServicePort.findByIdAndUserId(id, userId);
+        return save(domain.toBuilder().notificationStatus(status).build());
     }
 
-    @Override
-    public Optional<NotificationDomain> findByIdAndUserId(final UUID id, final UUID userId) {
-        return notificationPersistencePort.findByIdAndUserId(id, userId);
-    }
 }
